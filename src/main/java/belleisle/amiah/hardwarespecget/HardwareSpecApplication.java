@@ -78,7 +78,7 @@ public class HardwareSpecApplication extends Application {
         leftImageVbox.getChildren().add(mainIcon);
         // Setting control properties
         // mainIcon Properties
-        mainIcon.setImage(new Image(NodeList.class.getResourceAsStream("add_image_simple_icon.png")));
+        mainIcon.setImage(new Image(NodeList.class.getResourceAsStream("add_image_icon.png")));
         mainIcon.setPreserveRatio(true);
         mainIcon.setCursor(Cursor.HAND);
         mainIcon.setFitHeight(80);
