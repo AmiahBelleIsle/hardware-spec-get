@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public class HardwareSpecApplication extends Application {
 
-    public static Stage rootStage = null;
+    protected static Stage rootStage = null;
     public static final Image DEFAULT_ICON = new Image(HardwareSpecApplication.class.getResourceAsStream("add_image_icon.png"));
     public static final String APP_TITLE = "Hardware Specifications";
 
