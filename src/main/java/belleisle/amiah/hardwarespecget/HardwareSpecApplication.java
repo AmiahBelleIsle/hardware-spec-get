@@ -15,11 +15,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 public class HardwareSpecApplication extends Application {
 
     public static Stage rootStage = null;
+    public static final Image DEFAULT_ICON = new Image(HardwareSpecApplication.class.getResourceAsStream("add_image_icon.png"));
+    public static final String APP_TITLE = "Hardware Specifications";
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -31,7 +35,7 @@ public class HardwareSpecApplication extends Application {
         rootStage = stage;
         VBox rootPane = new VBox();
         Scene scene = new Scene(rootPane, 320, 240);
-        stage.setTitle("Hardware Specifications");
+        stage.setTitle(APP_TITLE);
         stage.getIcons().add(new Image(getClass().getResourceAsStream("app_icon.png")));
         stage.setMinWidth(500);
         stage.setMinHeight(300);
@@ -78,7 +82,7 @@ public class HardwareSpecApplication extends Application {
         leftImageVbox.getChildren().add(mainIcon);
         // Setting control properties
         // mainIcon Properties
-        mainIcon.setImage(new Image(NodeList.class.getResourceAsStream("add_image_icon.png")));
+        mainIcon.setImage(DEFAULT_ICON);
         mainIcon.setPreserveRatio(true);
         mainIcon.setCursor(Cursor.HAND);
         mainIcon.setFitHeight(80);
@@ -135,6 +139,16 @@ public class HardwareSpecApplication extends Application {
         toggleEditModeButton.setOnAction(event -> {
             rightNodeList.toggleEditMode();
             leftNodeList.toggleEditMode();
+        });
+
+        mainIcon.setOnMouseClicked(event -> {
+            if (mainIcon.getImage().equals(DEFAULT_ICON)) {
+                Optional<File> file = Util.getImageFileFromUser(stage);
+                if (file.isPresent()) {
+                    mainIcon.setImage(new Image(file.get().toURI().toString()));
+                    mainIcon.setCursor(Cursor.DEFAULT);
+                }
+            }
         });
 
         /* ========== *
