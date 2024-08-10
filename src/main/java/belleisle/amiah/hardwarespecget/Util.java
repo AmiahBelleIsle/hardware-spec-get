@@ -1,21 +1,31 @@
 package belleisle.amiah.hardwarespecget;
 
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.util.Optional;
 
 public abstract class Util {
 
-    public static void fitImageToPane(ImageView img, double padding) {
-        if (img.getParent() instanceof Pane pane) {
-            // Get dimension that the image can fit in
-            double smallestDimension = Math.min(pane.getWidth(), pane.getHeight());
 
-            img.setScaleX(smallestDimension / (img.getFitWidth() + padding));
-            img.setScaleY(smallestDimension / (img.getFitHeight() + padding));
+    private static final FileChooser.ExtensionFilter IMAGE_FILTER = new FileChooser.ExtensionFilter(
+            "Image File (*.png, *.jpg, *jpeg, *.jpe, *.gif, *.bmp)",
+            "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.gif", "*.bmp");
+
+
+    public static Optional<File> getImageFileFromUser(Stage stage) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(HardwareSpecApplication.APP_TITLE + " - Select File");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+
+        fileChooser.getExtensionFilters().add(IMAGE_FILTER);
+
+        File file = fileChooser.showOpenDialog(stage);
+        if (file != null) {
+            return Optional.of(file);
         }
+        return Optional.empty();
     }
-
-
 
 }
