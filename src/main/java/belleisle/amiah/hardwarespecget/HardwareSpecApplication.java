@@ -67,6 +67,7 @@ public class HardwareSpecApplication extends Application {
         rightScrollPaneVbox.setPadding(new Insets(0, 0, 0, 5));
         leftScrollPaneVbox.setPadding(new Insets(0, 0, 0, 5));
         leftOptionsHbox.setPadding(new Insets(5));
+        leftOptionsHbox.setSpacing(3);
         leftImageVbox.setPadding(new Insets(5));
         leftImageVbox.setAlignment(Pos.CENTER);
 
@@ -76,9 +77,13 @@ public class HardwareSpecApplication extends Application {
 
         // Creating controls
         Button toggleEditModeButton = new Button("Edit Visibility");
+        Button replaceIconButton = new Button("Set Icon");
+        Button saveButton = new Button("Save");
         ImageView mainIcon = new ImageView();
         // Adding Controls
         leftOptionsHbox.getChildren().add(toggleEditModeButton);
+        leftOptionsHbox.getChildren().add(replaceIconButton);
+        leftOptionsHbox.getChildren().add(saveButton);
         leftImageVbox.getChildren().add(mainIcon);
         // Setting control properties
         // mainIcon Properties
@@ -98,13 +103,14 @@ public class HardwareSpecApplication extends Application {
 
         NodeList rightNodeList = new NodeList(rightScrollPaneVbox.getChildren());
 
-        rightNodeList.createElement("CPU", "Intel i5 10400 @ 2.90 GHz", "#CC44AA");
-        rightNodeList.createElement("GPU", "Nvidia 3060 RTX", "#5599DD");
+        rightNodeList.createElement("CPU", HardwareCollector.getCPU(), "#CC44AA");
+        rightNodeList.createElement("GPU", HardwareCollector.getGPU(), "#5599DD");
         rightNodeList.createElement("Memory", "454 / 34213213", "#4CA8AF");
 
         NodeList leftNodeList = new NodeList(leftScrollPaneVbox.getChildren());
 
-        leftNodeList.createElement("Operating System", "Linux\nDebian", "#CC44AA");
+        leftNodeList.createElement("Operating System", HardwareCollector.getOS(), "#CC44AA");
+        leftNodeList.createElement("Kernel", HardwareCollector.getKernel(), "#CC44AA");
         leftNodeList.createElement("Username", "", "#EE4487");
 
         /* ========= *
@@ -141,6 +147,14 @@ public class HardwareSpecApplication extends Application {
             leftNodeList.toggleEditMode();
         });
 
+        replaceIconButton.setOnAction(event -> {
+            Optional<File> file = Util.getImageFileFromUser(stage);
+            if (file.isPresent()) {
+                mainIcon.setImage(new Image(file.get().toURI().toString()));
+                mainIcon.setCursor(Cursor.DEFAULT);
+            }
+        });
+
         mainIcon.setOnMouseClicked(event -> {
             if (mainIcon.getImage().equals(DEFAULT_ICON)) {
                 Optional<File> file = Util.getImageFileFromUser(stage);
@@ -151,13 +165,24 @@ public class HardwareSpecApplication extends Application {
             }
         });
 
+        saveButton.setOnAction(event -> {
+            Util.saveImage(mainIcon.getImage().getUrl());
+        });
+
         /* ========== *
          * Show Stage *
          * ========== */
+
         stage.show();
+
+        /* ========= *
+         * Load Data *
+         * ========= */
+        Util.loadImage(mainIcon);
     }
 
     public static void main(String[] args) {
         launch();
     }
+
 }
