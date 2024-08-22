@@ -10,8 +10,8 @@ public class AlertBuilder {
     private String headerText;
 
     /**
-     * Creates a new AlertBuilder Instance. It may be more
-     * convenient to use AlertBuilder.makeBuilder() instead.
+     * Creates a new AlertBuilder Instance. Using AlertBuilder.makeBuilder()
+     * instead may be more convenient and easier to read in some cases.
      *
      * @param type The alert type
      * @see Alert
