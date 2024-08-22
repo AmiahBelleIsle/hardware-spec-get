@@ -16,6 +16,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
+import java.io.File;
+import java.io.IOException;
+
 
 public class NodeList {
 
@@ -43,6 +46,9 @@ public class NodeList {
         Button moveUp = new Button("⏶");
         Button moveDown = new Button("⏷");
         ToggleButton toggleVisibility = new ToggleButton("On");
+        // This toggle group should only ever have one element
+        ToggleGroup visibilityToggleGroup = new ToggleGroup();
+        visibilityToggleGroup.getToggles().add(toggleVisibility);
         // Properties and bindings
         SimpleBooleanProperty isHidden = new SimpleBooleanProperty(false);
         BooleanBinding isHiddenAndNotEditing = isHidden.and(isEditMode.not());
@@ -57,9 +63,10 @@ public class NodeList {
         buttonBox.setSpacing(2);
         VBox.setMargin(vbox, new Insets(5));
         VBox.setMargin(hbox, new Insets(5));
-
         hbox.setPadding(new Insets(0, 0, 4, 0));
+
         // This is the main background
+        vbox.setUserData(mainBackgroundColor); // Hold background color for easy retrieval later
         vbox.setStyle("-fx-background-color: " + mainBackgroundColor + ";"
                     + "-fx-background-insets: -6 -4 -2 -4;"
                     + "-fx-background-radius: 5");
@@ -71,18 +78,27 @@ public class NodeList {
         vbox.visibleProperty().bind(isHiddenAndNotEditing.not());
         vbox.managedProperty().bind(isHiddenAndNotEditing.not());
         // Toggle Button
+        toggleVisibility.setId("toggleVisibility");
         toggleVisibility.managedProperty().bind(isEditMode);
         toggleVisibility.visibleProperty().bind(isEditMode);
         toggleVisibility.setMinWidth(40);
         // Image Properties
-        icon.setImage(new Image(NodeList.class.getResourceAsStream("app_icon.png")));
+        icon.setId("icon");
+
+        icon.setImage(new Image(
+                Util.getResourceFile("app_icon.png", false)
+                    .orElse(new File(HardwareSpecApplication.APP_ICON_URI.getPath())).toURI().toString()
+        ));
+
         icon.setPreserveRatio(true);
         icon.setFitHeight(30);
         icon.setFitWidth(30);
         // Name Label Properties
+        name.setId("name");
         name.setPrefHeight(30);
         name.setFont(Font.font(Font.getDefault().getFamily(), FontWeight.BOLD, Font.getDefault().getSize()));
         // Description Properties
+        description.setId("description");
         description.setPadding(new Insets(0, 0, 6, 5));
 
         // Add to child Hbox
@@ -98,7 +114,6 @@ public class NodeList {
         // Add to root Vbox
         vbox.getChildren().add(hbox);
         vbox.getChildren().add(description);
-
 
         /* ========= *
          * Listeners *
