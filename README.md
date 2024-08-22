@@ -6,4 +6,4 @@ Makes use of the following:
 * [JavaFX](https://openjfx.io/) - For the GUI
 * [ControlsFX](https://controlsfx.github.io/) - For the segmented bar and other misc. components
 * [OSHI](https://github.com/oshi/oshi) - For collecting hardware information
-* [Jackson Jr](https://github.com/FasterXML/jackson-jr) - For storing and loading data from JSON files.
+* [Jackson](https://github.com/FasterXML/jackson) - For storing and loading data to and from JSON files.
