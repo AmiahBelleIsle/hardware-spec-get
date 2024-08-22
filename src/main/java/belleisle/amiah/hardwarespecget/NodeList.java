@@ -4,20 +4,16 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.geometry.NodeOrientation;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.Node;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 
 import java.io.File;
-import java.io.IOException;
 
 
 public class NodeList {
@@ -86,7 +82,7 @@ public class NodeList {
         icon.setId("icon");
 
         icon.setImage(new Image(
-                Util.getResourceFile("app_icon.png", false)
+                FileUtil.getResourceFile("app_icon.png", false)
                     .orElse(new File(HardwareSpecApplication.APP_ICON_URI.getPath())).toURI().toString()
         ));
 

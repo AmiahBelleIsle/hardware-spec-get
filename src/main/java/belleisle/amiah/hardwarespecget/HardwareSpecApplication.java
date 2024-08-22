@@ -24,9 +24,9 @@ import java.util.Optional;
 public class HardwareSpecApplication extends Application {
 
     protected static Stage rootStage = null;
-    protected static final URI APP_ICON_URI = Util.getResourceFile( "app_icon.png", false)
+    protected static final URI APP_ICON_URI = FileUtil.getResourceFile( "app_icon.png", false)
                                               .orElse(new File("")).toURI();
-    protected static final URI ADD_IMAGE_ICON_URI = Util.getResourceFile( "add_image_icon.png", false)
+    protected static final URI ADD_IMAGE_ICON_URI = FileUtil.getResourceFile( "add_image_icon.png", false)
                                                     .orElse(new File("")).toURI();
     public static final Image DEFAULT_ICON = new Image(ADD_IMAGE_ICON_URI.toString());
     public static final String APP_TITLE = "Hardware Specifications";
@@ -154,7 +154,7 @@ public class HardwareSpecApplication extends Application {
         });
 
         replaceIconButton.setOnAction(event -> {
-            Optional<File> file = Util.getImageFileFromUser(stage);
+            Optional<File> file = FileUtil.getImageFileFromUser(stage);
             if (file.isPresent()) {
                 mainIcon.setImage(new Image(file.get().toURI().toString()));
                 mainIcon.setCursor(Cursor.DEFAULT);
@@ -163,7 +163,7 @@ public class HardwareSpecApplication extends Application {
 
         mainIcon.setOnMouseClicked(event -> {
             if (mainIcon.getImage().equals(DEFAULT_ICON)) {
-                Optional<File> file = Util.getImageFileFromUser(stage);
+                Optional<File> file = FileUtil.getImageFileFromUser(stage);
                 if (file.isPresent()) {
                     mainIcon.setImage(new Image(file.get().toURI().toString()));
                     mainIcon.setCursor(Cursor.DEFAULT);
@@ -173,8 +173,8 @@ public class HardwareSpecApplication extends Application {
 
         saveButton.setOnAction(event -> {
             // Save the image and node lists and store whether they were successful
-            boolean savedImg = Util.saveImage(mainIcon.getImage().getUrl());
-            boolean savedLists = Util.saveNodeLists(leftNodeList, rightNodeList);
+            boolean savedImg = FileUtil.saveImage(mainIcon.getImage().getUrl());
+            boolean savedLists = FileUtil.saveNodeLists(leftNodeList, rightNodeList);
             // Tell the user that their data was saved successfully
             if (savedImg && savedLists) {
                 new AlertBuilder(Alert.AlertType.INFORMATION)
@@ -194,7 +194,7 @@ public class HardwareSpecApplication extends Application {
         /* ========= *
          * Load Data *
          * ========= */
-        Util.loadImage(mainIcon);
+        FileUtil.loadImage(mainIcon);
     }
 
     public static void main(String[] args) {
