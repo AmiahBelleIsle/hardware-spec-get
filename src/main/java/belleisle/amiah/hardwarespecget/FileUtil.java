@@ -1,7 +1,6 @@
 package belleisle.amiah.hardwarespecget;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,10 +16,9 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.net.URL;
-import java.util.Map;
 import java.util.Optional;
 
-public abstract class Util {
+public abstract class FileUtil {
 
     // Used to ensure that the user can only select supported image files
     private static final FileChooser.ExtensionFilter IMAGE_FILTER = new FileChooser.ExtensionFilter(
@@ -35,7 +33,7 @@ public abstract class Util {
      */
     public static Optional<File> getResourceFile(String fileName, boolean makeFile) {
         // Get path to resources
-        URL url = Util.class.getResource("");
+        URL url = FileUtil.class.getResource("");
         File file;
 
         // Should never be null, but check just in case
