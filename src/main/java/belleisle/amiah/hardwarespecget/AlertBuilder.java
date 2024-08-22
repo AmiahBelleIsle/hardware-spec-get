@@ -13,6 +13,10 @@ public class AlertBuilder {
         this.type = type;
     }
 
+    public static AlertBuilder makeBuilder(Alert.AlertType type) {
+        return new AlertBuilder(type);
+    }
+
     public AlertBuilder setWindowTitle(String windowTitle) {
         this.windowTitle = windowTitle;
         return this;

@@ -59,7 +59,7 @@ public abstract class FileUtil {
                 }
             }
             catch (IOException e) {
-                new AlertBuilder(Alert.AlertType.ERROR)
+                AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                         .setWindowTitle("Error")
                         .setHeaderText("An Error has Occurred")
                         .setMessage("A file or directory didn't exist and was unable to be created.")
@@ -68,7 +68,7 @@ public abstract class FileUtil {
                 return Optional.empty();
             }
             catch (SecurityException e) {
-                new AlertBuilder(Alert.AlertType.ERROR)
+                AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                         .setWindowTitle("Error")
                         .setHeaderText("An Error has Occurred")
                         .setMessage("A security manager is preventing the creation of the file \"" + fileName + "\".")
@@ -158,7 +158,7 @@ public abstract class FileUtil {
             jsonFile = fileOptional.get();
         }
         else {
-            new AlertBuilder(Alert.AlertType.ERROR)
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
                     .setMessage("Unable to locate the save file and save the set icon.")
@@ -179,7 +179,7 @@ public abstract class FileUtil {
             file.flush();
         }
         catch (IOException e) {
-            new AlertBuilder(Alert.AlertType.ERROR)
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
                     .setMessage("Unable to write the set icon to the save file.")
@@ -207,7 +207,7 @@ public abstract class FileUtil {
             jsonFile = fileOptional.get();
         }
         else {
-            new AlertBuilder(Alert.AlertType.ERROR)
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
                     .setMessage("Unable to access the save file to load the saved icon.")
@@ -233,7 +233,7 @@ public abstract class FileUtil {
             }
         }
         catch (IOException e) {
-            new AlertBuilder(Alert.AlertType.ERROR)
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
                     .setMessage("Unable to load the save file to get the saved icon.")
@@ -251,7 +251,7 @@ public abstract class FileUtil {
             jsonFile = getResourceFile("/savedata/entries.json", true).orElseThrow();
         }
         catch (Exception e) {
-            new AlertBuilder(Alert.AlertType.ERROR)
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
                     .setMessage("Unable to locate the save file and save the hardware information.")
