@@ -9,15 +9,8 @@ public class AlertBuilder {
     private String messageText;
     private String headerText;
 
-    /**
-     * Creates a new AlertBuilder Instance. Using AlertBuilder.makeBuilder()
-     * instead may be more convenient and easier to read in some cases.
-     *
-     * @param type The alert type
-     * @see Alert
-     * @see javafx.scene.control.Alert.AlertType
-     */
-    public AlertBuilder(Alert.AlertType type) {
+    // Used by makeBuilder
+    private AlertBuilder(Alert.AlertType type) {
         this.type = type;
     }
 
