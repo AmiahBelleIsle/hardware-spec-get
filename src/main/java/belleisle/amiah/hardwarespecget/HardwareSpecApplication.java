@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -17,12 +18,17 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Optional;
 
 public class HardwareSpecApplication extends Application {
 
     protected static Stage rootStage = null;
-    public static final Image DEFAULT_ICON = new Image(HardwareSpecApplication.class.getResourceAsStream("add_image_icon.png"));
+    protected static final URI APP_ICON_URI = Util.getResourceFile( "app_icon.png", false)
+                                              .orElse(new File("")).toURI();
+    protected static final URI ADD_IMAGE_ICON_URI = Util.getResourceFile( "add_image_icon.png", false)
+                                                    .orElse(new File("")).toURI();
+    public static final Image DEFAULT_ICON = new Image(ADD_IMAGE_ICON_URI.toString());
     public static final String APP_TITLE = "Hardware Specifications";
 
     @Override
@@ -36,7 +42,7 @@ public class HardwareSpecApplication extends Application {
         VBox rootPane = new VBox();
         Scene scene = new Scene(rootPane, 320, 240);
         stage.setTitle(APP_TITLE);
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("app_icon.png")));
+        stage.getIcons().add(new Image(APP_ICON_URI.toString()));
         stage.setMinWidth(500);
         stage.setMinHeight(300);
         stage.setScene(scene);
@@ -166,7 +172,17 @@ public class HardwareSpecApplication extends Application {
         });
 
         saveButton.setOnAction(event -> {
-            Util.saveImage(mainIcon.getImage().getUrl());
+            // Save the image and node lists and store whether they were successful
+            boolean savedImg = Util.saveImage(mainIcon.getImage().getUrl());
+            boolean savedLists = Util.saveNodeLists(leftNodeList, rightNodeList);
+            // Tell the user that their data was saved successfully
+            if (savedImg && savedLists) {
+                new AlertBuilder(Alert.AlertType.INFORMATION)
+                        .setWindowTitle("Saved Successfully")
+                        .setHeaderText("Saved Successfully")
+                        .setMessage("Saved Successfully")
+                        .build().showAndWait();
+            }
         });
 
         /* ========== *
