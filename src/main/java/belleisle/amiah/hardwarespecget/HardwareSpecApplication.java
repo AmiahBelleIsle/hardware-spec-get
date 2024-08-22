@@ -110,13 +110,13 @@ public class HardwareSpecApplication extends Application {
         NodeList rightNodeList = new NodeList(rightScrollPaneVbox.getChildren());
 
         rightNodeList.createElement("CPU", HardwareCollector.getCPU(), "#CC44AA");
-        rightNodeList.createElement("GPU", HardwareCollector.getGPU(), "#5599DD");
+        rightNodeList.createElement("GPU", "", "#5599DD");
         rightNodeList.createElement("Memory", "454 / 34213213", "#4CA8AF");
 
         NodeList leftNodeList = new NodeList(leftScrollPaneVbox.getChildren());
 
         leftNodeList.createElement("Operating System", HardwareCollector.getOS(), "#CC44AA");
-        leftNodeList.createElement("Kernel", HardwareCollector.getKernel(), "#CC44AA");
+        leftNodeList.createElement("Kernel", HardwareCollector.getKernel().get(), "#CC44AA");
         leftNodeList.createElement("Username", "", "#EE4487");
 
         /* ========= *
@@ -177,7 +177,7 @@ public class HardwareSpecApplication extends Application {
             boolean savedLists = FileUtil.saveNodeLists(leftNodeList, rightNodeList);
             // Tell the user that their data was saved successfully
             if (savedImg && savedLists) {
-                new AlertBuilder(Alert.AlertType.INFORMATION)
+                AlertBuilder.makeBuilder(Alert.AlertType.INFORMATION)
                         .setWindowTitle("Saved Successfully")
                         .setHeaderText("Saved Successfully")
                         .setMessage("Saved Successfully")
@@ -190,7 +190,6 @@ public class HardwareSpecApplication extends Application {
          * ========== */
 
         stage.show();
-
         /* ========= *
          * Load Data *
          * ========= */

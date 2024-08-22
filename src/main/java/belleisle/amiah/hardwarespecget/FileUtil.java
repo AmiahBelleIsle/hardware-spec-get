@@ -108,41 +108,6 @@ public abstract class FileUtil {
         return Optional.empty();
     }
 
-    // Takes in a string and removes redundant information
-    public static String beautifyName(String name) {
-        int searchIndex = 0;
-        while (searchIndex != -1) {
-            searchIndex = name.indexOf('(', searchIndex);
-
-            if (name.startsWith("(R)", searchIndex)) {
-                name = name.substring(0, searchIndex) + name.substring(searchIndex + 3);
-                searchIndex++;
-            }
-            else if (name.startsWith("(TM)", searchIndex)) {
-                name = name.substring(0, searchIndex) + name.substring(searchIndex + 4);
-                searchIndex++;
-            }
-        }
-
-        return name;
-    }
-
-    public static String deepExtractFromBrackets(String name) {
-        int beginIndex = 0;
-        int endIndex = name.length();
-
-        beginIndex = name.indexOf('[', beginIndex);
-        endIndex = name.lastIndexOf(']', endIndex);
-
-        if ((beginIndex != -1 && endIndex != -1) && beginIndex < endIndex) {
-            name = name.substring(beginIndex + 1, endIndex);
-            return deepExtractFromBrackets(name);
-        }
-        else {
-            return name;
-        }
-    }
-
     /**
      * Saves the provided imageURL into the file "savedata/image.json"
      *
@@ -294,7 +259,7 @@ public abstract class FileUtil {
             System.out.println(jsonString);
         }
         catch (IOException e) {
-            new AlertBuilder(Alert.AlertType.ERROR)
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
                     .setMessage("Unable to write the hardware information to the save file.")
