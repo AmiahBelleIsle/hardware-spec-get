@@ -15,7 +15,7 @@ public class AlertBuilder {
     }
 
     /**
-     * Creates a new AlertBuilder Instance
+     * Creates a new AlertBuilder instance with the specified alert type.
      *
      * @param type The alert type
      * @return A new AlertBuilder instance
