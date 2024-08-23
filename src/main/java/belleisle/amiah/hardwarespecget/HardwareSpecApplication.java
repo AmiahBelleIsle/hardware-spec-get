@@ -3,6 +3,7 @@ package belleisle.amiah.hardwarespecget;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -30,16 +31,31 @@ public class HardwareSpecApplication extends Application {
                                                     .orElse(new File("")).toURI();
     public static final Image DEFAULT_ICON = new Image(ADD_IMAGE_ICON_URI.toString());
     public static final String APP_TITLE = "Hardware Specifications";
+    public static final SimpleBooleanProperty IS_EDIT_MODE = new SimpleBooleanProperty(false);
 
     @Override
     public void start(Stage stage) throws IOException {
 
-        /* =================== *
-         * Initial Stage Setup *
-         * =================== */
+        /* ============================ *
+         * Initial Stage and Pane Setup *
+         * ============================ */
 
+        // Left side of application
+        HBox leftOptionsHbox = new HBox(); // top pane in leftMainPane to hold option buttons and etc
+        VBox leftImageVbox = new VBox(); //  middle pane in leftMainPane, holds an icon
+        VBox leftScrollPaneVbox = new VBox(); // Vbox inside leftScrollPane, holds hardware info nodes
+        ScrollPane leftScrollPane = new ScrollPane(leftScrollPaneVbox); // bottom pane in leftMainPane
+        VBox leftMainPane = new VBox(leftOptionsHbox, leftImageVbox, leftScrollPane); // Pane holding left side of app
+        // Right side of application
+        VBox rightScrollPaneVbox = new VBox(); // Vbox inside rightScrollPane, holds hardware info nodes
+        ScrollPane rightScrollPane = new ScrollPane(rightScrollPaneVbox); // This is the primary content on the right
+        VBox rightMainPane = new VBox(rightScrollPane); // Pane holding right side of app
+        // Main panes holding content
+        HBox mainContentHbox = new HBox(leftMainPane, rightMainPane); // used to hold the left and right panes
+        VBox rootPane = new VBox(mainContentHbox);
+
+        // Stage set up
         rootStage = stage;
-        VBox rootPane = new VBox();
         Scene scene = new Scene(rootPane, 320, 240);
         stage.setTitle(APP_TITLE);
         stage.getIcons().add(new Image(APP_ICON_URI.toString()));
@@ -47,28 +63,6 @@ public class HardwareSpecApplication extends Application {
         stage.setMinHeight(300);
         stage.setScene(scene);
 
-        /* ======================= *
-         * Pane Creation and Setup *
-         * ======================= */
-
-        // Declaring and init panes
-        HBox mainContentHbox = new HBox(); // used to hold the left and right panes
-        VBox rightMainPane = new VBox(); // right pane in mainContentHbox; holds rightScrollPane
-        VBox rightScrollPaneVbox = new VBox(); // Vbox inside rightScrollPane
-        ScrollPane rightScrollPane = new ScrollPane(rightScrollPaneVbox); // holds content in rightMainPane
-        VBox leftMainPane = new VBox(); // left pane in mainContentHbox
-        HBox leftOptionsHbox = new HBox(); // top pane in leftMainPane to hold option buttons and etc
-        VBox leftImageVbox = new VBox(); // second pane in leftMainPane, holds OS icon
-        VBox leftScrollPaneVbox = new VBox(); // Vbox inside leftScrollPane
-        ScrollPane leftScrollPane = new ScrollPane(leftScrollPaneVbox); // holds content in bottom of leftMainPane
-        // Organizing Panes
-        rootPane.getChildren().add(mainContentHbox);
-        mainContentHbox.getChildren().add(leftMainPane);
-        mainContentHbox.getChildren().add(rightMainPane);
-        rightMainPane.getChildren().add(rightScrollPane);
-        leftMainPane.getChildren().add(leftOptionsHbox);
-        leftMainPane.getChildren().add(leftImageVbox);
-        leftMainPane.getChildren().add(leftScrollPane);
         // Setting Pane Properties
         rightScrollPaneVbox.setPadding(new Insets(0, 0, 0, 5));
         leftScrollPaneVbox.setPadding(new Insets(0, 0, 0, 5));
@@ -76,6 +70,11 @@ public class HardwareSpecApplication extends Application {
         leftOptionsHbox.setSpacing(3);
         leftImageVbox.setPadding(new Insets(5));
         leftImageVbox.setAlignment(Pos.CENTER);
+
+        // Setting pane colors
+        rightScrollPane.setStyle("-fx-background: " + "#393a3e" + ";" + "-fx-background-color: " + "#393a3e" + ";" );
+        leftScrollPane.setStyle("-fx-background: " + "#393a3e" + ";" + "-fx-background-color: " + "#393a3e" + ";" );
+        rootPane.setStyle("-fx-background: " + "#393a3e" + ";");
 
         /* ========================== *
          * Control Creation and Setup *
@@ -87,9 +86,7 @@ public class HardwareSpecApplication extends Application {
         Button saveButton = new Button("Save");
         ImageView mainIcon = new ImageView();
         // Adding Controls
-        leftOptionsHbox.getChildren().add(toggleEditModeButton);
-        leftOptionsHbox.getChildren().add(replaceIconButton);
-        leftOptionsHbox.getChildren().add(saveButton);
+        leftOptionsHbox.getChildren().addAll(toggleEditModeButton, replaceIconButton, saveButton);
         leftImageVbox.getChildren().add(mainIcon);
         // Setting control properties
         // mainIcon Properties
@@ -100,6 +97,7 @@ public class HardwareSpecApplication extends Application {
         mainIcon.setFitWidth(80);
         // mainIcon bindings to fit parent
         DoubleBinding smallestDimension = (DoubleBinding) Bindings.min(leftImageVbox.heightProperty(), leftImageVbox.widthProperty());
+        // Adding to the width and height creates padding
         mainIcon.scaleXProperty().bind(smallestDimension.divide(mainIcon.fitWidthProperty().add(10)));
         mainIcon.scaleYProperty().bind(smallestDimension.divide(mainIcon.fitHeightProperty().add(10)));
 
@@ -109,15 +107,15 @@ public class HardwareSpecApplication extends Application {
 
         NodeList rightNodeList = new NodeList(rightScrollPaneVbox.getChildren());
 
-        rightNodeList.createElement("CPU", HardwareCollector.getCPU(), "#CC44AA");
-        rightNodeList.createElement("GPU", "", "#5599DD");
-        rightNodeList.createElement("Memory", "454 / 34213213", "#4CA8AF");
+        rightNodeList.createElement("CPU", HardwareCollector.getCPU(), "#5f6264");
+        rightNodeList.createElement("GPU", HardwareCollector.getGPUs().getFirst(), "#5f6264");
+        rightNodeList.createElement("Memory", "454 / 34213213", "#5f6264");
 
         NodeList leftNodeList = new NodeList(leftScrollPaneVbox.getChildren());
 
-        leftNodeList.createElement("Operating System", HardwareCollector.getOS(), "#CC44AA");
-        leftNodeList.createElement("Kernel", HardwareCollector.getKernel().get(), "#CC44AA");
-        leftNodeList.createElement("Username", "", "#EE4487");
+        leftNodeList.createElement("Operating System", HardwareCollector.getOS(), "#5f6264");
+        leftNodeList.createElement("Kernel", HardwareCollector.getKernel().get(), "#5f6264");
+        leftNodeList.createElement("Username", "", "#5f6264");
 
         /* ========= *
          * Listeners *
@@ -148,10 +146,7 @@ public class HardwareSpecApplication extends Application {
          * =============== */
 
         // Setting control actions
-        toggleEditModeButton.setOnAction(event -> {
-            rightNodeList.toggleEditMode();
-            leftNodeList.toggleEditMode();
-        });
+        toggleEditModeButton.setOnAction(event -> IS_EDIT_MODE.set(!IS_EDIT_MODE.get()));
 
         replaceIconButton.setOnAction(event -> {
             Optional<File> file = FileUtil.getImageFileFromUser(stage);
@@ -190,6 +185,7 @@ public class HardwareSpecApplication extends Application {
          * ========== */
 
         stage.show();
+
         /* ========= *
          * Load Data *
          * ========= */
