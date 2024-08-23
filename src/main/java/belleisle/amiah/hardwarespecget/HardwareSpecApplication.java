@@ -107,15 +107,18 @@ public class HardwareSpecApplication extends Application {
 
         NodeList rightNodeList = new NodeList(rightScrollPaneVbox.getChildren());
 
-        rightNodeList.createElement("CPU", HardwareCollector.getCPU(), "#5f6264");
-        rightNodeList.createElement("GPU", HardwareCollector.getGPUs().getFirst(), "#5f6264");
-        rightNodeList.createElement("Memory", "454 / 34213213", "#5f6264");
+        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.CPU));
+        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.GPU, 0));
+        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.RAM));
+        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.USERDATA));
 
         NodeList leftNodeList = new NodeList(leftScrollPaneVbox.getChildren());
 
-        leftNodeList.createElement("Operating System", HardwareCollector.getOS(), "#5f6264");
-        leftNodeList.createElement("Kernel", HardwareCollector.getKernel().get(), "#5f6264");
-        leftNodeList.createElement("Username", "", "#5f6264");
+        leftNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.OS));
+        leftNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.KERNEL));
+        leftNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.USERNAME));
+
+        FileUtil.loadNodeLists(leftNodeList, rightNodeList);
 
         /* ========= *
          * Listeners *

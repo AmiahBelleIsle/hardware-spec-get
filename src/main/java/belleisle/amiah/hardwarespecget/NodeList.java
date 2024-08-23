@@ -26,14 +26,16 @@ public class NodeList {
         this.nodeList = nodeList;
     }
 
-    public void createElement(String titleText, String contentText, String mainBackgroundColor) {
+
+
+    public void createElement(NodeInfo info) {
 
         /* ========================= *
          * Create Panes and Controls *
          * ========================= */
 
-        Label titleLabel = new Label(titleText);
-        Label contentLabel = new Label(contentText);
+        Label titleLabel = new Label(info.getTitle());
+        Label contentLabel = new Label(info.getContent());
         ImageView icon = new ImageView();
         Button moveUpButton = new Button("⏶");
         Button moveDownButton = new Button("⏷");
@@ -43,9 +45,10 @@ public class NodeList {
         HBox titleBox = new HBox(icon, titleLabel, buttonBox);
         VBox rootNode = new VBox(titleBox, contentLabel);
 
+        rootNode.setUserData(info);
+
         // Properties and bindings
-        SimpleBooleanProperty isHidden = new SimpleBooleanProperty(false);
-        BooleanBinding isHiddenAndNotEditing = isHidden.and(HardwareSpecApplication.IS_EDIT_MODE.not());
+        BooleanBinding isHiddenAndNotEditing = info.getIsShownProperty().not().and(HardwareSpecApplication.IS_EDIT_MODE.not());
 
         /* ==================================== *
          * Set properties of controls and panes *
@@ -58,27 +61,28 @@ public class NodeList {
         VBox.setMargin(rootNode, new Insets(5));
         VBox.setMargin(titleBox, new Insets(5));
         titleBox.setPadding(new Insets(0, 0, 4, 0));
+
         // Title properties
-        titleLabel.setId("name");
         titleLabel.setPrefHeight(30);
         titleLabel.setFont(Font.font(Font.getDefault().getFamily(), FontWeight.BOLD, Font.getDefault().getSize()));
-        // Description Properties
-        contentLabel.setId("description");
+        // Content Properties
         contentLabel.setPadding(new Insets(0, 0, 6, 5));
         // Image Properties
-        icon.setId("icon");
-
         icon.setImage(new Image(
                 FileUtil.getResourceFile("app_icon.png", false)
                         .orElse(new File(HardwareSpecApplication.APP_ICON_URI.getPath())).toURI().toString()
         ));
-
         icon.setPreserveRatio(true);
         icon.setFitHeight(30);
         icon.setFitWidth(30);
         // Toggle button properties
-        visibilityToggleButton.setId("toggleVisibility");
         visibilityToggleButton.setMinWidth(40);
+
+        // Setting control ids (used to lookup nodes to save their values)
+        titleLabel.setId("title");
+        contentLabel.setId("content");
+        icon.setId("icon");
+        visibilityToggleButton.setId("visibility-toggle");
 
         /* ======== *
          * Bindings *
@@ -107,11 +111,11 @@ public class NodeList {
         visibilityToggleButton.selectedProperty().addListener(event -> {
             if (visibilityToggleButton.selectedProperty().get()) {
                 visibilityToggleButton.setText("Off");
-                isHidden.set(true);
+                info.setIsShown(false);
             }
             else {
                 visibilityToggleButton.setText("On");
-                isHidden.set(false);
+                info.setIsShown(true);
             }
         });
 
@@ -123,8 +127,7 @@ public class NodeList {
          * Set CSS *
          * ======= */
 
-        rootNode.setUserData(mainBackgroundColor); // Hold background color for easy retrieval later
-        rootNode.setStyle("-fx-background-color: " + mainBackgroundColor + ";"
+        rootNode.setStyle("-fx-background-color: " + info.getMainColor() + ";"
                 + "-fx-background-insets: -6 -4 -2 -4;"
                 + "-fx-background-radius: 5");
 
@@ -186,7 +189,6 @@ public class NodeList {
                     }
                 }
             }
-
             else if (dir == NodeSwapDirection.DOWN) {
                 insertionIndex = i + 1;
                 // Loop around to the end of the list if out of bounds
@@ -213,7 +215,6 @@ public class NodeList {
                     }
                 }
             }
-
             // Finally, add the node to the list
             nodeList.add(insertionIndex, iTemp);
         }
