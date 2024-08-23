@@ -19,136 +19,124 @@ import java.io.File;
 public class NodeList {
 
     private ObservableList<Node> nodeList = null;
-    private SimpleBooleanProperty isEditMode = new SimpleBooleanProperty(false);
+
 
 
     public NodeList(ObservableList<Node> nodeList) {
         this.nodeList = nodeList;
     }
 
-    public void createElement(String title, String desc, String mainBackgroundColor) {
+    public void createElement(String titleText, String contentText, String mainBackgroundColor) {
 
         /* ========================= *
          * Create Panes and Controls *
          * ========================= */
 
-        // vbox is the root of the element
-        VBox vbox = new VBox();
-        HBox hbox = new HBox();
-        Label description = new Label(desc);
+        Label titleLabel = new Label(titleText);
+        Label contentLabel = new Label(contentText);
         ImageView icon = new ImageView();
-        Label name = new Label(title);
-        HBox buttonBox = new HBox();
-        Button moveUp = new Button("⏶");
-        Button moveDown = new Button("⏷");
-        ToggleButton toggleVisibility = new ToggleButton("On");
-        // This toggle group should only ever have one element
-        ToggleGroup visibilityToggleGroup = new ToggleGroup();
-        visibilityToggleGroup.getToggles().add(toggleVisibility);
+        Button moveUpButton = new Button("⏶");
+        Button moveDownButton = new Button("⏷");
+        ToggleButton visibilityToggleButton = new ToggleButton("On");
+
+        HBox buttonBox = new HBox(visibilityToggleButton, moveDownButton, moveUpButton);
+        HBox titleBox = new HBox(icon, titleLabel, buttonBox);
+        VBox rootNode = new VBox(titleBox, contentLabel);
+
         // Properties and bindings
         SimpleBooleanProperty isHidden = new SimpleBooleanProperty(false);
-        BooleanBinding isHiddenAndNotEditing = isHidden.and(isEditMode.not());
+        BooleanBinding isHiddenAndNotEditing = isHidden.and(HardwareSpecApplication.IS_EDIT_MODE.not());
 
         /* ==================================== *
          * Set properties of controls and panes *
          * ==================================== */
 
         // Pane spacing and properties
-        vbox.setSpacing(2);
-        hbox.setSpacing(5);
+        rootNode.setSpacing(2);
+        titleBox.setSpacing(5);
         buttonBox.setSpacing(2);
-        VBox.setMargin(vbox, new Insets(5));
-        VBox.setMargin(hbox, new Insets(5));
-        hbox.setPadding(new Insets(0, 0, 4, 0));
-
-        // This is the main background
-        vbox.setUserData(mainBackgroundColor); // Hold background color for easy retrieval later
-        vbox.setStyle("-fx-background-color: " + mainBackgroundColor + ";"
-                    + "-fx-background-insets: -6 -4 -2 -4;"
-                    + "-fx-background-radius: 5");
-        // This is the background for the title, icon, buttons, etc
-        hbox.setStyle("-fx-background-color: " + "#FF22CC" + ";"
-                    + "-fx-background-insets: -6 -4 -2 -4;"
-                    + "-fx-background-radius: 3.75;");
-        // Vbox visibility bindings
-        vbox.visibleProperty().bind(isHiddenAndNotEditing.not());
-        vbox.managedProperty().bind(isHiddenAndNotEditing.not());
-        // Toggle Button
-        toggleVisibility.setId("toggleVisibility");
-        toggleVisibility.managedProperty().bind(isEditMode);
-        toggleVisibility.visibleProperty().bind(isEditMode);
-        toggleVisibility.setMinWidth(40);
+        VBox.setMargin(rootNode, new Insets(5));
+        VBox.setMargin(titleBox, new Insets(5));
+        titleBox.setPadding(new Insets(0, 0, 4, 0));
+        // Title properties
+        titleLabel.setId("name");
+        titleLabel.setPrefHeight(30);
+        titleLabel.setFont(Font.font(Font.getDefault().getFamily(), FontWeight.BOLD, Font.getDefault().getSize()));
+        // Description Properties
+        contentLabel.setId("description");
+        contentLabel.setPadding(new Insets(0, 0, 6, 5));
         // Image Properties
         icon.setId("icon");
 
         icon.setImage(new Image(
                 FileUtil.getResourceFile("app_icon.png", false)
-                    .orElse(new File(HardwareSpecApplication.APP_ICON_URI.getPath())).toURI().toString()
+                        .orElse(new File(HardwareSpecApplication.APP_ICON_URI.getPath())).toURI().toString()
         ));
 
         icon.setPreserveRatio(true);
         icon.setFitHeight(30);
         icon.setFitWidth(30);
-        // Name Label Properties
-        name.setId("name");
-        name.setPrefHeight(30);
-        name.setFont(Font.font(Font.getDefault().getFamily(), FontWeight.BOLD, Font.getDefault().getSize()));
-        // Description Properties
-        description.setId("description");
-        description.setPadding(new Insets(0, 0, 6, 5));
+        // Toggle button properties
+        visibilityToggleButton.setId("toggleVisibility");
+        visibilityToggleButton.setMinWidth(40);
 
-        // Add to child Hbox
-        buttonBox.getChildren().add(toggleVisibility);
-        buttonBox.getChildren().add(moveDown);
-        buttonBox.getChildren().add(moveUp);
+        /* ======== *
+         * Bindings *
+         * ======== */
 
-        // Add to parent Hbox
-        hbox.getChildren().add(icon);
-        hbox.getChildren().add(name);
-        hbox.getChildren().add(buttonBox);
+        rootNode.visibleProperty().bind(isHiddenAndNotEditing.not());
+        rootNode.managedProperty().bind(isHiddenAndNotEditing.not());
+        visibilityToggleButton.managedProperty().bind(HardwareSpecApplication.IS_EDIT_MODE);
+        visibilityToggleButton.visibleProperty().bind(HardwareSpecApplication.IS_EDIT_MODE);
 
-        // Add to root Vbox
-        vbox.getChildren().add(hbox);
-        vbox.getChildren().add(description);
-
-        /* ========= *
-         * Listeners *
-         * ========= */
+        /* ============================= *
+         * Listeners and Control Actions *
+         * ============================= */
 
         // Scale vbox to fit scroll pane width (minus 33 to account for scrollbar width)
         HardwareSpecApplication.rootStage.widthProperty().addListener(event -> {
-            vbox.setPrefWidth((HardwareSpecApplication.rootStage.getWidth() / 2) - 33);
+            rootNode.setPrefWidth((HardwareSpecApplication.rootStage.getWidth() / 2) - 33);
         });
         // Scale name to fit the space between the icon and the right buttons
-        hbox.widthProperty().addListener(event -> {
-            name.setPrefWidth(((HardwareSpecApplication.rootStage.getWidth() / 2) - 33)
+        titleBox.widthProperty().addListener(event -> {
+            titleLabel.setPrefWidth(((HardwareSpecApplication.rootStage.getWidth() / 2) - 33)
                                 - icon.getFitWidth()
                                 - buttonBox.widthProperty().get());
         });
         // Change the text of the visibility toggle depending on state
-        toggleVisibility.selectedProperty().addListener(event -> {
-            if (toggleVisibility.selectedProperty().get()) {
-                toggleVisibility.setText("Off");
+        visibilityToggleButton.selectedProperty().addListener(event -> {
+            if (visibilityToggleButton.selectedProperty().get()) {
+                visibilityToggleButton.setText("Off");
                 isHidden.set(true);
             }
             else {
-                toggleVisibility.setText("On");
+                visibilityToggleButton.setText("On");
                 isHidden.set(false);
             }
         });
 
-        /* =============== *
-         * Control Actions *
-         * =============== */
+        moveUpButton.setOnAction(event -> swapNodes(nodeList.indexOf(rootNode), NodeSwapDirection.UP));
+        moveDownButton.setOnAction(event -> swapNodes(nodeList.indexOf(rootNode), NodeSwapDirection.DOWN));
 
-        moveUp.setOnAction(event -> swapNodes(nodeList.indexOf(vbox), NodeSwapDirection.UP));
-        moveDown.setOnAction(event -> swapNodes(nodeList.indexOf(vbox), NodeSwapDirection.DOWN));
+
+        /* ======= *
+         * Set CSS *
+         * ======= */
+
+        rootNode.setUserData(mainBackgroundColor); // Hold background color for easy retrieval later
+        rootNode.setStyle("-fx-background-color: " + mainBackgroundColor + ";"
+                + "-fx-background-insets: -6 -4 -2 -4;"
+                + "-fx-background-radius: 5");
+
+        titleBox.setStyle("-fx-background-color: " + "#8b8e8f" + ";"
+                + "-fx-background-insets: -6 -4 -2 -4;"
+                + "-fx-background-radius: 3.75;");
 
         /* ===================== *
          * Add element to parent *
          * ===================== */
 
-        nodeList.add(vbox);
+        nodeList.add(rootNode);
     }
 
     // Used for the swapNodes method
@@ -183,10 +171,10 @@ public class NodeList {
                 // and the node at insertion index is invalid
                 // and edit mode is not enabled
                 while (insertionIndex != i && insertionIndex != nodeList.size()
-                        && !nodeList.get(insertionIndex).managedProperty().get() && !getEditMode()) {
+                        && !nodeList.get(insertionIndex).managedProperty().get() && !HardwareSpecApplication.IS_EDIT_MODE.get()) {
 
                     // If the node at the index isn't managed (is hidden), skip over it
-                    if (!nodeList.get(insertionIndex).managedProperty().get() && !getEditMode()) {
+                    if (!nodeList.get(insertionIndex).managedProperty().get() && !HardwareSpecApplication.IS_EDIT_MODE.get()) {
                         insertionIndex--;
                         if (insertionIndex < 0) {
                             insertionIndex = nodeList.size();
@@ -210,10 +198,10 @@ public class NodeList {
                 // and the node at insertion index minus 1 is unmanaged (list is shifted left, due to above removal)
                 // and edit mode is not enabled
                 while (insertionIndex != i && insertionIndex != 0
-                        && !nodeList.get(insertionIndex-1).managedProperty().get() && !getEditMode()) {
+                        && !nodeList.get(insertionIndex-1).managedProperty().get() && !HardwareSpecApplication.IS_EDIT_MODE.get()) {
 
                     // If the node at the index isn't managed (is hidden), skip over it
-                    if (!nodeList.get(insertionIndex-1).managedProperty().get() && !getEditMode()) {
+                    if (!nodeList.get(insertionIndex-1).managedProperty().get() && !HardwareSpecApplication.IS_EDIT_MODE.get()) {
                         insertionIndex++;
                         if (insertionIndex > nodeList.size()) {
                             insertionIndex = 0;
@@ -231,17 +219,7 @@ public class NodeList {
         }
     }
 
-    public void setEditMode(boolean b) {
-        isEditMode.set(b);
-    }
 
-    public void toggleEditMode() {
-        isEditMode.set(!isEditMode.get());
-    }
-
-    public boolean getEditMode() {
-        return isEditMode.get();
-    }
 
     public ObservableList<Node> getNodeList() {
         return nodeList;
