@@ -56,7 +56,7 @@ public class HardwareSpecApplication extends Application {
 
         // Stage set up
         rootStage = stage;
-        Scene scene = new Scene(rootPane, 320, 240);
+        Scene scene = new Scene(rootPane, 820, 540);
         stage.setTitle(APP_TITLE);
         stage.getIcons().add(new Image(APP_ICON_URI.toString()));
         stage.setMinWidth(500);
@@ -84,9 +84,10 @@ public class HardwareSpecApplication extends Application {
         Button toggleEditModeButton = new Button("Edit Visibility");
         Button replaceIconButton = new Button("Set Icon");
         Button saveButton = new Button("Save");
+        Button recollectButton = new Button("Recollect Info");
         ImageView mainIcon = new ImageView();
         // Adding Controls
-        leftOptionsHbox.getChildren().addAll(toggleEditModeButton, replaceIconButton, saveButton);
+        leftOptionsHbox.getChildren().addAll(toggleEditModeButton, replaceIconButton, saveButton, recollectButton);
         leftImageVbox.getChildren().add(mainIcon);
         // Setting control properties
         // mainIcon Properties
@@ -148,16 +149,6 @@ public class HardwareSpecApplication extends Application {
             }
         });
 
-        mainIcon.setOnMouseClicked(event -> {
-            if (mainIcon.getImage().equals(DEFAULT_ICON)) {
-                Optional<File> file = FileUtil.getImageFileFromUser(stage);
-                if (file.isPresent()) {
-                    mainIcon.setImage(new Image(file.get().toURI().toString()));
-                    mainIcon.setCursor(Cursor.DEFAULT);
-                }
-            }
-        });
-
         saveButton.setOnAction(event -> {
             // Save the image and node lists and store whether they were successful
             boolean savedImg = FileUtil.saveImage(mainIcon.getImage().getUrl());
@@ -172,6 +163,27 @@ public class HardwareSpecApplication extends Application {
             }
         });
 
+        recollectButton.setOnAction(event -> {
+            leftNodeList.clearNonUserNodes();
+            leftNodeList.addAllNodes(HardwareCollector.collectSystemInfo());
+            rightNodeList.clearNonUserNodes();
+            rightNodeList.addAllNodes(HardwareCollector.collectHardware());
+            // Jiggle the stage width so that the nodes' listeners get called
+            // to update their appearance
+            stage.setWidth(stage.getWidth() + 1);
+            stage.setWidth(stage.getWidth() - 1);
+        });
+
+        mainIcon.setOnMouseClicked(event -> {
+            if (mainIcon.getImage().equals(DEFAULT_ICON)) {
+                Optional<File> file = FileUtil.getImageFileFromUser(stage);
+                if (file.isPresent()) {
+                    mainIcon.setImage(new Image(file.get().toURI().toString()));
+                    mainIcon.setCursor(Cursor.DEFAULT);
+                }
+            }
+        });
+
         /* ========== *
          * Show Stage *
          * ========== */
@@ -182,7 +194,10 @@ public class HardwareSpecApplication extends Application {
          * Load Data *
          * ========= */
 
-        FileUtil.loadNodeLists(leftNodeList, rightNodeList);
+        if (!FileUtil.loadNodeLists(leftNodeList, rightNodeList)) {
+            leftNodeList.addAllNodes(HardwareCollector.collectSystemInfo());
+            rightNodeList.addAllNodes(HardwareCollector.collectHardware());
+        }
         FileUtil.loadImage(mainIcon);
     }
 
