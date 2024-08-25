@@ -103,6 +103,15 @@ public class NodeInfo {
         mainColor = color;
     }
 
+    public void setUserTitle(String title) {
+        userTitle = title;
+    }
+
+    public void setUserContent(String content) {
+        userContent = content;
+    }
+
+    // Enums
     public enum HardwareType {
         CPU("CPU"),
         GPU("GPU"),
@@ -123,6 +132,22 @@ public class NodeInfo {
 
         public String getValueAsString() {
             return valueAsString;
+        }
+
+        public static HardwareType stringToValue(String type) {
+            return switch (type.toUpperCase()) {
+                case "CPU" -> CPU;
+                case "GPU" -> GPU;
+                case "DISK" -> DISK;
+                case "RAM" -> RAM;
+                case "MOTHERBOARD" -> MOTHERBOARD;
+                case "DISPLAY" -> DISPLAY;
+                case "OS", "OPERATING SYSTEM" -> OS;
+                case "KERNEL" -> KERNEL;
+                case "USERNAME" -> USERNAME;
+                case "USERDATA" -> USERDATA;
+              default -> null;
+            };
         }
 
     }
