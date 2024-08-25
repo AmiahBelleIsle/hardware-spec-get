@@ -13,6 +13,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.io.File;
+import java.util.Collection;
 
 
 public class NodeList {
@@ -221,6 +222,16 @@ public class NodeList {
 
     public ObservableList<Node> getNodeList() {
         return nodeList;
+    }
+
+    public void addAllNodes(Collection<NodeInfo> nodes) {
+        for (NodeInfo ni : nodes) {
+            createElementInList(ni);
+        }
+    }
+
+    public void clearNonUserNodes() {
+        nodeList.removeIf(n -> ((NodeInfo) n.getUserData()).getType() != NodeInfo.HardwareType.USERDATA);
     }
 
 }
