@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
@@ -235,28 +233,39 @@ public abstract class FileUtil {
             rootNode.set("right-list", rightListNode);
             // Fill the arrays
             for (Node n : left.getNodeList()) {
-                leftListNode.add(
-                        mapper.createObjectNode()
-                        .put("name", ((Label) n.lookup("#name")).getText())
-                        .put("description",((Label) n.lookup("#description")).getText())
-                        .put("icon", ((ImageView) n.lookup("#icon")).getImage().getUrl())
-                        .put("invisible", ((ToggleButton) n.lookup("#toggleVisibility")).getToggleGroup().getToggles().getFirst().isSelected())
-                        .put("main-color", n.getUserData().toString())
-                );
+                // Put data all nodes will have
+                ObjectNode tempNode = mapper.createObjectNode()
+                        .put("type", ((NodeInfo) n.getUserData()).getType().getValueAsString())
+                        .put("index",((NodeInfo) n.getUserData()).getIndex())
+                        .put("shown", ((NodeInfo) n.getUserData()).getIsShown())
+                        .put("background-color", ((NodeInfo) n.getUserData()).getMainColor());
+                // Save userdata if the node has userdata
+                if ( ((NodeInfo) n.getUserData()).getType() == NodeInfo.HardwareType.USERDATA) {
+                    tempNode.put("user-title", ((NodeInfo) n.getUserData()).getUserTitle());
+                    tempNode.put("user-content", ((NodeInfo) n.getUserData()).getUserContent());
+                }
+                // Add to the right list array
+                leftListNode.add(tempNode);
             }
             for (Node n : right.getNodeList()) {
-                rightListNode.add(
-                        mapper.createObjectNode()
-                        .put("name", ((Label) n.lookup("#name")).getText())
-                        .put("description",((Label) n.lookup("#description")).getText())
-                        .put("icon", ((ImageView) n.lookup("#icon")).getImage().getUrl())
-                        .put("invisible", ((ToggleButton) n.lookup("#toggleVisibility")).getToggleGroup().getToggles().getFirst().isSelected())
-                        .put("main-color", n.getUserData().toString())
-                );
+                // Put data all nodes will have
+                ObjectNode tempNode = mapper.createObjectNode()
+                        .put("type", ((NodeInfo) n.getUserData()).getType().getValueAsString())
+                        .put("index",((NodeInfo) n.getUserData()).getIndex())
+                        .put("shown", ((NodeInfo) n.getUserData()).getIsShown())
+                        .put("background-color", ((NodeInfo) n.getUserData()).getMainColor());
+                // Save userdata if the node has userdata
+                if ( ((NodeInfo) n.getUserData()).getType() == NodeInfo.HardwareType.USERDATA) {
+                    tempNode.put("user-title", ((NodeInfo) n.getUserData()).getUserTitle());
+                    tempNode.put("user-content", ((NodeInfo) n.getUserData()).getUserContent());
+                }
+                // Add to the right list array
+                rightListNode.add(tempNode);
             }
 
-            String jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
-            System.out.println(jsonString);
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+            file.write(json);
+            file.flush();
         }
         catch (IOException e) {
             AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
@@ -269,8 +278,71 @@ public abstract class FileUtil {
         }
 
         return true;
-
     }
 
+
+
+    public static boolean loadNodeLists(NodeList left, NodeList right) {
+        // Get the file path to load from
+        Optional<File> fileOptional = getResourceFile("/savedata/entries.json", true);
+        File jsonFile;
+
+        if (fileOptional.isPresent()) {
+            jsonFile = fileOptional.get();
+        }
+        else {
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
+                    .setWindowTitle("Error")
+                    .setHeaderText("An Error has Occurred")
+                    .setMessage("Unable to access the save file to load the saved icon.")
+                    .build()
+                    .showAndWait();
+            return false;
+        }
+
+        try (BufferedReader file = new BufferedReader(new FileReader(jsonFile))) {
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node  = mapper.readTree(file);
+
+            for (JsonNode n : node.get("left-list")) {
+                NodeInfo newNode = new NodeInfo(
+                        NodeInfo.HardwareType.stringToValue(n.get("type").asText()),
+                        n.get("index").asInt(),
+                        n.get("shown").asBoolean());
+                // Set user data if the node contains user data
+                if (newNode.getType() == NodeInfo.HardwareType.USERDATA) {
+                    newNode.setUserTitle(n.get("user-title").asText());
+                    newNode.setUserTitle(n.get("user-content").asText());
+                }
+                // Add the node to the list
+                left.createElementInList(newNode);
+            }
+            for (JsonNode n : node.get("right-list")) {
+                NodeInfo newNode = new NodeInfo(
+                        NodeInfo.HardwareType.stringToValue(n.get("type").asText()),
+                        n.get("index").asInt(),
+                        n.get("shown").asBoolean());
+                // Set user data if the node contains user data
+                if (newNode.getType() == NodeInfo.HardwareType.USERDATA) {
+                    newNode.setUserTitle(n.get("user-title").asText());
+                    newNode.setUserTitle(n.get("user-content").asText());
+                }
+                // Add the node to the list
+                right.createElementInList(newNode);
+            }
+
+        }
+        catch (IOException e) {
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
+                    .setWindowTitle("Error")
+                    .setHeaderText("An Error has Occurred")
+                    .setMessage("Unable to load the save file to get the saved icon.")
+                    .build()
+                    .showAndWait();
+            return false;
+        }
+        return true;
+    }
 
 }
