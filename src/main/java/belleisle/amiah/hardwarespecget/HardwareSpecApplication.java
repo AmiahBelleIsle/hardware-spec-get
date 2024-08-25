@@ -105,20 +105,9 @@ public class HardwareSpecApplication extends Application {
          * Creating Node Lists *
          * =================== */
 
+        // These link the children of a pane to a NodeList object
         NodeList rightNodeList = new NodeList(rightScrollPaneVbox.getChildren());
-
-        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.CPU));
-        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.GPU, 0));
-        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.RAM));
-        rightNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.USERDATA));
-
         NodeList leftNodeList = new NodeList(leftScrollPaneVbox.getChildren());
-
-        leftNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.OS));
-        leftNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.KERNEL));
-        leftNodeList.createElement(new NodeInfo(NodeInfo.HardwareType.USERNAME));
-
-        FileUtil.loadNodeLists(leftNodeList, rightNodeList);
 
         /* ========= *
          * Listeners *
@@ -192,6 +181,8 @@ public class HardwareSpecApplication extends Application {
         /* ========= *
          * Load Data *
          * ========= */
+
+        FileUtil.loadNodeLists(leftNodeList, rightNodeList);
         FileUtil.loadImage(mainIcon);
     }
 
