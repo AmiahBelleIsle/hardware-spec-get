@@ -1,7 +1,6 @@
 package belleisle.amiah.hardwarespecget;
 
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -21,14 +20,11 @@ public class NodeList {
     private ObservableList<Node> nodeList = null;
 
 
-
     public NodeList(ObservableList<Node> nodeList) {
         this.nodeList = nodeList;
     }
 
-
-
-    public void createElement(NodeInfo info) {
+    public void createElementInList(NodeInfo info) {
 
         /* ========================= *
          * Create Panes and Controls *
@@ -40,6 +36,11 @@ public class NodeList {
         Button moveUpButton = new Button("⏶");
         Button moveDownButton = new Button("⏷");
         ToggleButton visibilityToggleButton = new ToggleButton("On");
+        // If the node is off, make the toggle button be off as well
+        if (!info.getIsShown()) {
+            visibilityToggleButton.setText("Off");
+            visibilityToggleButton.setSelected(true);
+        }
 
         HBox buttonBox = new HBox(visibilityToggleButton, moveDownButton, moveUpButton);
         HBox titleBox = new HBox(icon, titleLabel, buttonBox);
@@ -122,7 +123,6 @@ public class NodeList {
         moveUpButton.setOnAction(event -> swapNodes(nodeList.indexOf(rootNode), NodeSwapDirection.UP));
         moveDownButton.setOnAction(event -> swapNodes(nodeList.indexOf(rootNode), NodeSwapDirection.DOWN));
 
-
         /* ======= *
          * Set CSS *
          * ======= */
@@ -152,7 +152,6 @@ public class NodeList {
     private boolean isNodeInBounds(int i) {
         return i >= 0 && i <= nodeList.size();
     }
-
 
     private void swapNodes(int i, NodeSwapDirection dir){
         // Ensure both nodes are in bounds
@@ -219,8 +218,6 @@ public class NodeList {
             nodeList.add(insertionIndex, iTemp);
         }
     }
-
-
 
     public ObservableList<Node> getNodeList() {
         return nodeList;
