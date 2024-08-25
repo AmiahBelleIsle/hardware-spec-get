@@ -3,6 +3,7 @@ package belleisle.amiah.hardwarespecget;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -207,6 +208,14 @@ public abstract class FileUtil {
         return true;
     }
 
+    /**
+     * Converts the left and right lists into JSON format and saves
+     * them in "/savedata/entries.json"
+     *
+     * @param left The left list
+     * @param right The right list
+     * @return true if able to write to file, false otherwise
+     */
     public static boolean saveNodeLists(NodeList left, NodeList right) {
         // Get the file to write to
         File jsonFile;
@@ -281,7 +290,14 @@ public abstract class FileUtil {
     }
 
 
-
+    /**
+     * Loads Json data and creates NodeInfo objects from them,
+     * then puts them in a NodeList
+     *
+     * @param left The left list to load into
+     * @param right The right list to load into
+     * @return true if able to load from file, false otherwise
+     */
     public static boolean loadNodeLists(NodeList left, NodeList right) {
         // Get the file path to load from
         Optional<File> fileOptional = getResourceFile("/savedata/entries.json", true);
@@ -301,35 +317,45 @@ public abstract class FileUtil {
         }
 
         try (BufferedReader file = new BufferedReader(new FileReader(jsonFile))) {
-
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node  = mapper.readTree(file);
 
-            for (JsonNode n : node.get("left-list")) {
-                NodeInfo newNode = new NodeInfo(
-                        NodeInfo.HardwareType.stringToValue(n.get("type").asText()),
-                        n.get("index").asInt(),
-                        n.get("shown").asBoolean());
-                // Set user data if the node contains user data
-                if (newNode.getType() == NodeInfo.HardwareType.USERDATA) {
-                    newNode.setUserTitle(n.get("user-title").asText());
-                    newNode.setUserTitle(n.get("user-content").asText());
+            // Only load nodes if present and of proper type
+            if ((node.get("left-list") != null) && (node.get("right-list") != null)
+                    && (node.get("left-list").getNodeType() == JsonNodeType.ARRAY)
+                    && (node.get("right-list").getNodeType() == JsonNodeType.ARRAY)) {
+                // Load in the left list
+                for (JsonNode n : node.get("left-list")) {
+                    NodeInfo newNode = new NodeInfo(
+                            NodeInfo.HardwareType.stringToValue(n.get("type").asText()),
+                            n.get("index").asInt(),
+                            n.get("shown").asBoolean());
+                    // Set user data if the node contains user data
+                    if (newNode.getType() == NodeInfo.HardwareType.USERDATA) {
+                        newNode.setUserTitle(n.get("user-title").asText());
+                        newNode.setUserTitle(n.get("user-content").asText());
+                    }
+                    // Add the node to the list
+                    left.createElementInList(newNode);
                 }
-                // Add the node to the list
-                left.createElementInList(newNode);
+                // Load in the right list
+                for (JsonNode n : node.get("right-list")) {
+                    NodeInfo newNode = new NodeInfo(
+                            NodeInfo.HardwareType.stringToValue(n.get("type").asText()),
+                            n.get("index").asInt(),
+                            n.get("shown").asBoolean());
+                    // Set user data if the node contains user data
+                    if (newNode.getType() == NodeInfo.HardwareType.USERDATA) {
+                        newNode.setUserTitle(n.get("user-title").asText());
+                        newNode.setUserTitle(n.get("user-content").asText());
+                    }
+                    // Add the node to the list
+                    right.createElementInList(newNode);
+                }
             }
-            for (JsonNode n : node.get("right-list")) {
-                NodeInfo newNode = new NodeInfo(
-                        NodeInfo.HardwareType.stringToValue(n.get("type").asText()),
-                        n.get("index").asInt(),
-                        n.get("shown").asBoolean());
-                // Set user data if the node contains user data
-                if (newNode.getType() == NodeInfo.HardwareType.USERDATA) {
-                    newNode.setUserTitle(n.get("user-title").asText());
-                    newNode.setUserTitle(n.get("user-content").asText());
-                }
-                // Add the node to the list
-                right.createElementInList(newNode);
+            else {
+                // Failed to load nodes
+                return false;
             }
 
         }
