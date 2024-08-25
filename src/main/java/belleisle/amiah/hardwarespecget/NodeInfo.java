@@ -46,8 +46,8 @@ public class NodeInfo {
         return switch (type) {
             case CPU -> HardwareCollector.getCPU();
             case GPU -> HardwareCollector.getGPUs().get(index);
-            case DISK -> "DISK CONTENT";
-            case RAM -> "RAM CONTENT";
+            case DISK -> HardwareCollector.getDisk().get(index);
+            case RAM -> HardwareCollector.getRAM();
             case MOTHERBOARD -> HardwareCollector.getMotherboard();
             case DISPLAY -> "Not yet implemented";
             case OS -> HardwareCollector.getOS();
