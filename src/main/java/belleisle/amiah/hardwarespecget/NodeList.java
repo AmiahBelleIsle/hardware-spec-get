@@ -132,6 +132,7 @@ public class NodeList {
          * ===================== */
 
         nodeList.add(rootNode);
+
     }
 
     // Used for the swapNodes method
@@ -219,6 +220,10 @@ public class NodeList {
         for (NodeInfo ni : nodes) {
             createElementInList(ni);
         }
+        // Jiggle the stage width so that the nodes' listeners get called
+        // to update their appearance
+        HardwareSpecApplication.rootStage.setWidth(HardwareSpecApplication.rootStage.getWidth() + 1);
+        HardwareSpecApplication.rootStage.setWidth(HardwareSpecApplication.rootStage.getWidth() - 1);
     }
 
     public void clearNonUserNodes() {

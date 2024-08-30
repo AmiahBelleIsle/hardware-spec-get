@@ -152,7 +152,7 @@ public abstract class FileUtil {
     public static boolean saveImage(Image image) {
         // Don't save the image if it is the default image
         if (image.equals(HardwareSpecApplication.DEFAULT_ICON)) {
-            return false;
+            return true; // Still consider save successful in this case
         }
 
         // Getting the file
@@ -388,6 +388,10 @@ public abstract class FileUtil {
                     // Add the node to the list
                     right.createElementInList(newNode);
                 }
+                // Jiggle the stage width so that the nodes' listeners get called
+                // to update their appearance
+                HardwareSpecApplication.rootStage.setWidth(HardwareSpecApplication.rootStage.getWidth() + 1);
+                HardwareSpecApplication.rootStage.setWidth(HardwareSpecApplication.rootStage.getWidth() - 1);
             }
             else {
                 // Failed to load nodes

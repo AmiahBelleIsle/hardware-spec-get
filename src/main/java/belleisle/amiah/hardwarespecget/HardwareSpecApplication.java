@@ -146,18 +146,34 @@ public class HardwareSpecApplication extends Application {
         });
 
         saveButton.setOnAction(event -> {
-
             // Save the image and node lists and store whether they were successful
             boolean savedImg = FileUtil.saveImage(mainIcon.getImage());
             boolean savedLists = FileUtil.saveNodeLists(leftNodeList, rightNodeList);
-            // Tell the user that their data was saved successfully
-            if (savedImg && savedLists) {
-                AlertBuilder.makeBuilder(Alert.AlertType.INFORMATION)
-                        .setWindowTitle("Saved Successfully")
-                        .setHeaderText("Saved Successfully")
-                        .setMessage("Saved Successfully")
-                        .build().showAndWait();
+            // Create alert to show to user.
+            Alert msg = AlertBuilder.makeBuilder(Alert.AlertType.INFORMATION)
+                    .setWindowTitle("Save Status")
+                    .setHeaderText("Saved Successfully")
+                    .setMessage("Saved all preferences successfully")
+                    .build();
+            // If one type of save was successful, but not both
+            if ((savedImg || savedLists) && !(savedImg && savedLists)) {
+                 msg.setAlertType(Alert.AlertType.WARNING);
+                 msg.setHeaderText("Partially Saved");
+                 if (savedImg) {
+                     msg.setContentText("Saved icon successfully. Unable to save hardware information.");
+                 }
+                 else {
+                     msg.setContentText("Saved hardware information successfully. Unable to save icon.");
+                 }
             }
+            // If neither were successful
+            else if (!(savedImg && savedLists)) {
+                msg.setAlertType(Alert.AlertType.ERROR);
+                msg.setHeaderText("Save Error");
+                msg.setContentText("Unable to save preferences.");
+            }
+            // Finally show the message
+            msg.showAndWait();
         });
 
         recollectButton.setOnAction(event -> {
@@ -165,10 +181,6 @@ public class HardwareSpecApplication extends Application {
             leftNodeList.addAllNodes(HardwareCollector.collectSystemInfo());
             rightNodeList.clearNonUserNodes();
             rightNodeList.addAllNodes(HardwareCollector.collectHardware());
-            // Jiggle the stage width so that the nodes' listeners get called
-            // to update their appearance
-            stage.setWidth(stage.getWidth() + 1);
-            stage.setWidth(stage.getWidth() - 1);
         });
 
         mainIcon.setOnMouseClicked(event -> {
