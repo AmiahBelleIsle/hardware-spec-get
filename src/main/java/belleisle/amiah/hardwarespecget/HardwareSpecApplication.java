@@ -19,17 +19,12 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Optional;
 
 public class HardwareSpecApplication extends Application {
 
     protected static Stage rootStage = null;
-    protected static final URI APP_ICON_URI = FileUtil.getResourceFile( "app_icon.png", false)
-                                              .orElse(new File("")).toURI();
-    protected static final URI ADD_IMAGE_ICON_URI = FileUtil.getResourceFile( "add_image_icon.png", false)
-                                                    .orElse(new File("")).toURI();
-    public static final Image DEFAULT_ICON = new Image(ADD_IMAGE_ICON_URI.toString());
+    public static Image DEFAULT_ICON;
     public static final String APP_TITLE = "Hardware Specifications";
     public static final SimpleBooleanProperty IS_EDIT_MODE = new SimpleBooleanProperty(false);
 
@@ -58,7 +53,7 @@ public class HardwareSpecApplication extends Application {
         rootStage = stage;
         Scene scene = new Scene(rootPane, 820, 540);
         stage.setTitle(APP_TITLE);
-        stage.getIcons().add(new Image(APP_ICON_URI.toString()));
+        stage.getIcons().add(FileUtil.getImage("app_icon.png"));
         stage.setMinWidth(500);
         stage.setMinHeight(300);
         stage.setScene(scene);
@@ -91,6 +86,7 @@ public class HardwareSpecApplication extends Application {
         leftImageVbox.getChildren().add(mainIcon);
         // Setting control properties
         // mainIcon Properties
+        DEFAULT_ICON = FileUtil.getImage("add_image_icon.png");
         mainIcon.setImage(DEFAULT_ICON);
         mainIcon.setPreserveRatio(true);
         mainIcon.setCursor(Cursor.HAND);
@@ -150,8 +146,9 @@ public class HardwareSpecApplication extends Application {
         });
 
         saveButton.setOnAction(event -> {
+
             // Save the image and node lists and store whether they were successful
-            boolean savedImg = FileUtil.saveImage(mainIcon.getImage().getUrl());
+            boolean savedImg = FileUtil.saveImage(mainIcon.getImage());
             boolean savedLists = FileUtil.saveNodeLists(leftNodeList, rightNodeList);
             // Tell the user that their data was saved successfully
             if (savedImg && savedLists) {
