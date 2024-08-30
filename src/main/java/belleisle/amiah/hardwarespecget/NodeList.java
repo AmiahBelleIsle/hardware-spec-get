@@ -70,21 +70,12 @@ public class NodeList {
         // Content Properties
         contentLabel.setPadding(new Insets(0, 0, 6, 5));
         // Image Properties
-        icon.setImage(new Image(
-                FileUtil.getResourceFile("app_icon.png", false)
-                        .orElse(new File(HardwareSpecApplication.APP_ICON_URI.getPath())).toURI().toString()
-        ));
+        icon.setImage(FileUtil.getImage("app_icon.png"));
         icon.setPreserveRatio(true);
         icon.setFitHeight(30);
         icon.setFitWidth(30);
         // Toggle button properties
         visibilityToggleButton.setMinWidth(40);
-
-        // Setting control ids (used to lookup nodes to save their values)
-        titleLabel.setId("title");
-        contentLabel.setId("content");
-        icon.setId("icon");
-        visibilityToggleButton.setId("visibility-toggle");
 
         /* ======== *
          * Bindings *
