@@ -6,6 +6,11 @@ Makes use of the following:
 * [OSHI](https://github.com/oshi/oshi) - For collecting hardware information
 * [Jackson](https://github.com/FasterXML/jackson) - For storing and loading data to and from JSON files.
 
+## Preview Image
+
+![v.0.1 app](https://raw.githubusercontent.com/AmiahBelleIsle/hardware-spec-get/main/images/spec-get-v0.1.png)
+
+
 If you want to build this yourself, OSHI does not have a module declaration, so you will have
 to add it yourself. A helpful tool for this is [Module Info Inject](https://github.com/DraqueT/Module-Info-Inject),
 by DraqueT. However, if you are getting an error about multi-release, you will also have to download the source
