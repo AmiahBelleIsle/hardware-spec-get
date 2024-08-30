@@ -1,5 +1,3 @@
-Currently a work in progress
-
 A JavaFX application that collects the user's hardware information
 and then displays it in an interactive GUI.
 
