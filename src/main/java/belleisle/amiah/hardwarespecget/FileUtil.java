@@ -14,7 +14,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 public abstract class FileUtil {
@@ -23,65 +29,6 @@ public abstract class FileUtil {
     private static final FileChooser.ExtensionFilter IMAGE_FILTER = new FileChooser.ExtensionFilter(
             "Image File (*.png, *.jpg, *jpeg, *.jpe, *.gif, *.bmp)",
             "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.gif", "*.bmp");
-
-    /**
-     * Gets a file from the resources folder and creates it if it doesn't exist.
-     *
-     * @param fileName The file path starting in the resources folder
-     * @return An optional containing a valid file or empty.
-     */
-    public static Optional<File> getResourceFile(String fileName, boolean makeFile) {
-        // Get path to resources
-        URL url = FileUtil.class.getResource("");
-        File file;
-
-        // Should never be null, but check just in case
-        if (url != null && url.getFile() != null) {
-            String path = url.getFile();
-            // Insert a slash if needed
-            if (!fileName.startsWith("/")) {
-                file = new File(path + "/" + fileName);
-            }
-            else {
-                file = new File(path + fileName);
-            }
-
-            // Check if file exists and create it if not
-            try {
-                if (!file.exists() && makeFile) {
-                    file.getParentFile().mkdirs();
-                    file.createNewFile();
-                }
-                // Don't make the file if not wanted
-                else if (!file.exists() && !makeFile) {
-                    return Optional.empty();
-                }
-            }
-            catch (IOException e) {
-                AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
-                        .setWindowTitle("Error")
-                        .setHeaderText("An Error has Occurred")
-                        .setMessage("A file or directory didn't exist and was unable to be created.")
-                        .build()
-                        .showAndWait();
-                return Optional.empty();
-            }
-            catch (SecurityException e) {
-                AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
-                        .setWindowTitle("Error")
-                        .setHeaderText("An Error has Occurred")
-                        .setMessage("A security manager is preventing the creation of the file \"" + fileName + "\".")
-                        .build()
-                        .showAndWait();
-                return  Optional.empty();
-            }
-        }
-        else {
-            // Returning empty if resources directory can't be found for some reason
-            return Optional.empty();
-        }
-        return Optional.of(file);
-    }
 
     /**
      * Opens a file dialogue and returns the file selected by the user.
@@ -108,34 +55,127 @@ public abstract class FileUtil {
     }
 
     /**
+     * Gets an image file and returns it as an {@link Image} object.
+     *
+     * @param fileName Name of image file in the resource folder
+     * @return An {@link Image} with the specified resource, or an empty image
+     *         if it couldn't find the resource.
+     */
+    public static Image getImage(String fileName) {
+        // Get the resource to display
+        InputStream is = FileUtil.class.getResourceAsStream(fileName);
+        // If it can't be found return an image with nothing
+        if (is == null) {
+            return new Image("");
+        }
+        // Else return the image with the resource
+        return new Image(is);
+    }
+
+    /**
+     * Gets the specified save file. Will attempt to create the file if it
+     * doesn't exist.
+     *
+     * @param fileName The name of the file to get
+     * @return An {@link Optional Optional} containing a {@link File File}, or an empty
+     *         if it is unable to get or create the file.
+     */
+    public static Optional<File> getSaveFile(String fileName) {
+        // Save data path will be null if it doesn't exist and it can't create it.
+        String root = getSaveDataPath();
+        if (root == null) {
+            return Optional.empty();
+        }
+        File file = new File(root + fileName);
+        // Try to create file if it doesn't exist
+        if (ensureFileExists(file)) {
+            return Optional.of(file);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Gets the path to the save data directory. Does not
+     * verify if it exists.
+     *
+     * <p>This method is intended to be used with JLink only.
+     * Do not use this method otherwise.</p>
+     *
+     * @return The path to save data directory
+     */
+    private static String getSaveDataPath() {
+        // When JLinked, this will return the location of root dir the binary is in. E.g., if app
+        // binary is at /home/$USER/Desktop/app/bin/app, the below will return /home/$USER/Desktop/app
+        String root = System.getProperty("java.home");
+        // Add file separator if needed
+        if (!root.endsWith(File.separator)) {
+            root += File.separator;
+        }
+        return root + "save-data" + File.separator;
+    }
+
+    /**
+     * Verifies if a file and directories exists. If it doesn't exist, this method
+     * will attempt to create it. It will produce an {@code error} {@link Alert Alert}
+     * if it fails to do so.
+     *
+     * @param file The file to verify exists
+     * @return {@code true} if file exists, and was able to create it if it didn't exist,
+     *         or {@code false} if it was unable to access the file or create it.
+     */
+    private static boolean ensureFileExists(File file) {
+        try {
+            // If file or dir doesn't exist, try creating it
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+        }
+        catch (IOException | SecurityException e) {
+            AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
+                    .setWindowTitle("Error")
+                    .setHeaderText("An Error has Occurred")
+                    .setMessage("Unable to create the following directories and/or file: " + file.getAbsolutePath())
+                    .build()
+                    .showAndWait();
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Saves the provided imageURL into the file "savedata/image.json"
      *
-     * @param imageURL The image url returned from calling toURL() on a JavaFX image
+     * @param image A JavaFX Image object
      * @return true if able to write to file, false otherwise
      */
-    public static boolean saveImage(String imageURL) {
-        // Get the file to write to
-        Optional<File> fileOptional = getResourceFile("/savedata/image.json", true);
-        File jsonFile;
+    public static boolean saveImage(Image image) {
+        // Don't save the image if it is the default image
+        if (image.equals(HardwareSpecApplication.DEFAULT_ICON)) {
+            return false;
+        }
 
-        if (fileOptional.isPresent()) {
-            jsonFile = fileOptional.get();
+        // Getting the file
+        Optional<File> jsonFileOptional = getSaveFile("image.json");
+        File jsonFile;
+        if (jsonFileOptional.isPresent()) {
+            jsonFile = jsonFileOptional.get();
         }
         else {
             AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
-                    .setMessage("Unable to locate the save file and save the set icon.")
+                    .setMessage("Unable to find the save file.")
                     .build()
                     .showAndWait();
             return false;
         }
 
         // Create JSON and write it to file
-        try (BufferedWriter file = new BufferedWriter(new FileWriter(jsonFile.getPath()))) {
+        try (BufferedWriter file = new BufferedWriter(new FileWriter(jsonFile))) {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode node = mapper.createObjectNode();
-            node.put("image", imageURL);
+            node.put("image", image.getUrl());
 
             String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
 
@@ -163,34 +203,28 @@ public abstract class FileUtil {
      * @return true if able to read from file, false otherwise
      */
     public static boolean loadImage(ImageView imgView) {
-        // Get the file path to load from
-        Optional<File> fileOptional = getResourceFile("/savedata/image.json", true);
+        // Get the file to load from
+        // Getting the file
+        Optional<File> jsonFileOptional = getSaveFile("image.json");
         File jsonFile;
-
-        if (fileOptional.isPresent()) {
-            jsonFile = fileOptional.get();
+        if (jsonFileOptional.isPresent()) {
+            jsonFile = jsonFileOptional.get();
         }
         else {
             AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
-                    .setMessage("Unable to access the save file to load the saved icon.")
+                    .setMessage("Unable to find the save file.")
                     .build()
                     .showAndWait();
             return false;
         }
 
         try (BufferedReader file = new BufferedReader(new FileReader(jsonFile))) {
-            // Read the JSON file in as a string
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = file.readLine()) != null) {
-                sb.append(line);
-            }
-            // Don't load image if file is empty
-            if (!sb.isEmpty()) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode node = mapper.readTree(sb.toString());
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(file);
+            // If file doesn't contain field, don't try to load
+            if (node.get("image") != null) {
                 imgView.setImage(new Image(node.get("image").asText()));
                 // Set default cursor when loading image (because only the default image can be clicked on)
                 imgView.setCursor(Cursor.DEFAULT);
@@ -218,21 +252,24 @@ public abstract class FileUtil {
      */
     public static boolean saveNodeLists(NodeList left, NodeList right) {
         // Get the file to write to
+        // Getting the file
+        Optional<File> jsonFileOptional = getSaveFile("entries.json");
         File jsonFile;
-        try {
-            jsonFile = getResourceFile("/savedata/entries.json", true).orElseThrow();
+        if (jsonFileOptional.isPresent()) {
+            jsonFile = jsonFileOptional.get();
         }
-        catch (Exception e) {
+        else {
             AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
-                    .setMessage("Unable to locate the save file and save the hardware information.")
+                    .setMessage("Unable to find the save file.")
                     .build()
                     .showAndWait();
             return false;
         }
+
         // Create JSON and write it to file
-        try (BufferedWriter file = new BufferedWriter(new FileWriter(jsonFile.getPath()))) {
+        try (BufferedWriter file = new BufferedWriter(new FileWriter(jsonFile))) {
             // Create JSON objects and arrays
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode rootNode = mapper.createObjectNode();
@@ -289,7 +326,6 @@ public abstract class FileUtil {
         return true;
     }
 
-
     /**
      * Loads Json data and creates NodeInfo objects from them,
      * then puts them in a NodeList
@@ -299,18 +335,18 @@ public abstract class FileUtil {
      * @return true if able to load from file, false otherwise
      */
     public static boolean loadNodeLists(NodeList left, NodeList right) {
-        // Get the file path to load from
-        Optional<File> fileOptional = getResourceFile("/savedata/entries.json", true);
+        // Get file to load from
+        // Getting the file
+        Optional<File> jsonFileOptional = getSaveFile("entries.json");
         File jsonFile;
-
-        if (fileOptional.isPresent()) {
-            jsonFile = fileOptional.get();
+        if (jsonFileOptional.isPresent()) {
+            jsonFile = jsonFileOptional.get();
         }
         else {
             AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
-                    .setMessage("Unable to access the save file to load the saved icon.")
+                    .setMessage("Unable to find the save file.")
                     .build()
                     .showAndWait();
             return false;
@@ -363,7 +399,7 @@ public abstract class FileUtil {
             AlertBuilder.makeBuilder(Alert.AlertType.ERROR)
                     .setWindowTitle("Error")
                     .setHeaderText("An Error has Occurred")
-                    .setMessage("Unable to load the save file to get the saved icon.")
+                    .setMessage("Unable to load the save file to get the saved entries.")
                     .build()
                     .showAndWait();
             return false;
